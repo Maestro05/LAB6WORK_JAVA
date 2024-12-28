@@ -101,7 +101,7 @@ class Book extends AbstractBook implements Cloneable {
         Book clonedBook = (Book) super.clone();
         clonedBook.author = this.author.clone();
         clonedBook.category = this.category.clone();
-        return clonedBook; // Глубокое клонирование
+        return clonedBook; // Мелкое клонирование
     }
 
     // Глубокое клонирование

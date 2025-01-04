@@ -1,198 +1,326 @@
-class Author implements Cloneable {
-    private String name;
-    private String surname;
-    private String birthdate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
-    public Author(String name, String surname, String birthdate) {
+class MenuItem {
+    String name;
+    double price;
+
+    public MenuItem(String name, double price) {
         this.name = name;
-        this.surname = surname;
-        this.birthdate = birthdate;
+        this.price = price;
     }
 
-    public String getName() {
-        return name;
+    public void display() {
+        System.out.println(name + " - " + price + " руб.");
     }
 
-    public String getSurname() {
-        return surname;
-    }
-
-    public String getBirthdate() {
-        return birthdate;
-    }
-
-    public void print() {
-        System.out.println("Автор: " + name + " " + surname + ", Дата рождения: " + birthdate);
-    }
-
-    @Override
-    public Author clone() throws CloneNotSupportedException {
-        return (Author) super.clone(); // Мелкое клонирование
+    public double getPrice() {
+        return price;
     }
 }
 
-// Класс для категории книги
-class Category implements Cloneable {
-    private String name;
-    private String description;
-
-    public Category(String name, String description) {
-        this.name = name;
-        this.description = description;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void print() {
-        System.out.println("Категория: " + name + ", Описание: " + description);
+class MainDish extends MenuItem {
+    public MainDish(String name, double price) {
+        super(name, price);
     }
 
     @Override
-    public Category clone() throws CloneNotSupportedException {
-        return (Category) super.clone(); // Мелкое клонирование
+    public void display() {
+        System.out.print("[Главное блюдо] ");
+        super.display();
     }
 }
 
-// Абстрактный класс для книги
-abstract class AbstractBook {
-    protected String title;
-    protected Author author;
-    protected Category category;
-
-    public AbstractBook(String title, Author author, Category category) {
-        this.title = title;
-        this.author = author;
-        this.category = category;
+class Appetizer extends MenuItem {
+    public Appetizer(String name, double price) {
+        super(name, price);
     }
 
-    public abstract void getDetails();  // Каждая книга должна предоставить детали
+    @Override
+    public void display() {
+        System.out.print("[Закуска] ");
+        super.display();
+    }
 }
 
-// Базовый класс для книги
-class Book extends AbstractBook implements Cloneable {
-    protected int year;
-    protected int copiesAvailable;
-
-    public Book(String title, Author author, Category category, int year, int copiesAvailable) {
-        super(title, author, category);
-        this.year = year;
-        this.copiesAvailable = copiesAvailable;
-    }
-
-    public void print() {
-        System.out.println("Книга: " + title + ", Год: " + year + ", Доступных копий: " + copiesAvailable);
-        author.print();
-        category.print();
+class Drink extends MenuItem {
+    public Drink(String name, double price) {
+        super(name, price);
     }
 
     @Override
-    public void getDetails() {
-        System.out.println("Печатная книга: " + title + ", Год: " + year + ", Доступных копий: " + copiesAvailable);
+    public void display() {
+        System.out.print("[Напиток] ");
+        super.display();
+    }
+}
+
+class Dessert extends MenuItem {
+    public Dessert(String name, double price) {
+        super(name, price);
     }
 
     @Override
-    public Book clone() throws CloneNotSupportedException {
-        Book clonedBook = (Book) super.clone();
-        clonedBook.author = this.author.clone();
-        clonedBook.category = this.category.clone();
-        return clonedBook; // Мелкое клонирование
+    public void display() {
+        System.out.print("[Десерт] ");
+        super.display();
+    }
+}
+
+class Order {
+    List<MenuItem> items = new ArrayList<>();
+    private static int orderCount = 0;
+    private int orderNumber;
+
+    public Order() {
+        this.orderNumber = ++orderCount;
     }
 
-    // Глубокое клонирование
-    public Book deepClone() {
-        try {
-            Author clonedAuthor = this.author.clone();
-            Category clonedCategory = this.category.clone();
-            return new Book(this.title, clonedAuthor, clonedCategory, this.year, this.copiesAvailable);
-        } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
-            return null;
+    public void addItem(MenuItem item) {
+        items.add(item);
+    }
+
+    public void displayOrder() {
+        double total = 0;
+        System.out.println("\nВаш заказ #" + orderNumber + ":");
+        for (MenuItem item : items) {
+            item.display();
+            total += item.getPrice();
         }
+        System.out.println("Общая сумма: " + total + " руб.");
+    }
+
+    public static int getOrderCount() {
+        return orderCount;
+    }
+
+    public int getOrderNumber() {
+        return orderNumber;
+    }
+
+    // Метод для глубокого клонирования
+    public Order deepClone() {
+        Order clonedOrder = new Order();
+        for (MenuItem item : items) {
+            // создаем новый объект для каждого элемента
+            clonedOrder.addItem(new MenuItem(item.name, item.price));
+        }
+        return clonedOrder;
+    }
+
+    // Метод для мелкого клонирования
+    public Order shallowClone() {
+        Order clonedOrder = new Order();
+        clonedOrder.items = this.items;  // Ссылка на тот же список
+        return clonedOrder;
     }
 }
 
-// Производный класс для электронной книги
-class EBook extends Book {
-    private String fileFormat;
-    private double fileSize; // Размер файла в мегабайтах
-
-    public EBook(String title, Author author, Category category, int year, int copiesAvailable, String fileFormat, double fileSize) {
-        super(title, author, category, year, copiesAvailable);
-        this.fileFormat = fileFormat;
-        this.fileSize = fileSize;
-    }
-
-    @Override
-    public void print() {
-        super.print(); // Вызов метода базового класса
-        System.out.println("Формат файла: " + fileFormat + ", Размер файла: " + fileSize + " MB");
-    }
-
-    // Перегрузка метода print без вызова метода базового класса
-    public void printSimple() {
-        System.out.println("Электронная книга: " + title + ", Формат: " + fileFormat + ", Размер файла: " + fileSize + " MB");
-    }
-
-    @Override
-    public void getDetails() {
-        System.out.println("Электронная книга: " + title + ", Формат: " + fileFormat + ", Размер файла: " + fileSize + " MB");
-    }
-
-    @Override
-    public EBook clone() throws CloneNotSupportedException {
-        EBook clonedEBook = (EBook) super.clone();
-        return clonedEBook; // Мелкое клонирование
-    }
-}
-
-// Интерфейс для клонирования книг
-interface ClonableBook {
-    Book clone();  // Метод клонирования
-}
-
-// Главный класс программы
 public class Main {
-    public static void main(String[] args) {
-        // Создание автора и категории
-        Author author = new Author("John", "Doe", "01.01.1980");
-        Category category = new Category("Programming", "Books about software development");
 
-        // Создание обычной книги
-        Book originalBook = new Book("Java Programming", author, category, 2023, 10);
-        originalBook.print();
+    // Метод для отображения главного меню
+    public static void displayMenu() {
+        System.out.println("\nВыберите категорию меню:");
+        System.out.println("1. Главное блюдо");
+        System.out.println("2. Закуски");
+        System.out.println("3. Напитки");
+        System.out.println("4. Десерты");
+        System.out.println("5. Завершить заказ");
+        System.out.println("6. Выйти из программы");
+        System.out.println("7. Клонировать заказ");
+        System.out.print("Введите номер категории: ");
+    }
 
-        // Мелкое клонирование
-        try {
-            Book shallowClonedBook = originalBook.clone();
-            System.out.println("\nМелкое клонирование:");
-            shallowClonedBook.print();
-        } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
+    // Метод для отображения главных блюд
+    public static void displayMainDishes() {
+        System.out.println("\nГлавные блюда:");
+        System.out.println("1. Борщ - 150 руб.");
+        System.out.println("2. Стейк - 300 руб.");
+        System.out.println("3. Пельмени - 180 руб.");
+        System.out.println("4. Ризотто - 220 руб.");
+    }
+
+    // Метод для отображения закусок
+    public static void displayAppetizers() {
+        System.out.println("\nЗакуски:");
+        System.out.println("1. Салат Цезарь - 120 руб.");
+        System.out.println("2. Оливье - 100 руб.");
+        System.out.println("3. Блины с икрой - 150 руб.");
+        System.out.println("4. Тосты с авокадо - 110 руб.");
+    }
+
+    // Метод для отображения напитков
+    public static void displayDrinks() {
+        System.out.println("\nНапитки:");
+        System.out.println("1. Кола - 50 руб.");
+        System.out.println("2. Минеральная вода - 40 руб.");
+        System.out.println("3. Сок апельсиновый - 70 руб.");
+        System.out.println("4. Чай черный - 60 руб.");
+    }
+
+    // Метод для отображения десертов
+    public static void displayDesserts() {
+        System.out.println("\nДесерты:");
+        System.out.println("1. Торт Наполеон - 80 руб.");
+        System.out.println("2. Мороженое - 60 руб.");
+        System.out.println("3. Чизкейк - 120 руб.");
+        System.out.println("4. Пирог с яблоками - 90 руб.");
+    }
+
+    // Метод для отображения всех заказов
+    public static void displayAllOrders(List<Order> orders) {
+        if (orders.isEmpty()) {
+            System.out.println("Нет заказов для клонирования.");
+            return;
         }
 
-        // Глубокое клонирование
-        Book deepClonedBook = originalBook.deepClone();
-        System.out.println("\nГлубокое клонирование:");
-        deepClonedBook.print();
+        System.out.println("\nВсе заказы:");
+        for (Order order : orders) {
+            order.displayOrder();
+        }
+    }
 
-        // Создание электронной книги
-        EBook eBook = new EBook("Advanced Java", author, category, 2022, 5, "EPUB", 2.5);
-        System.out.println("\nЭлектронная книга (с вызовом метода базового класса):");
-        eBook.print();
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
 
-        // Перегрузка метода print
-        System.out.println("\nЭлектронная книга (без вызова метода базового класса):");
-        eBook.printSimple();
+        // Списки блюд
+        MainDish[] mainDishes = {
+            new MainDish("Борщ", 150),
+            new MainDish("Стейк", 300),
+            new MainDish("Пельмени", 180),
+            new MainDish("Ризотто", 220)
+        };
 
-        // Демонстрация использования абстрактного класса
-        AbstractBook printedBook = new Book("Printed Java", author, category, 2021, 15);
-        System.out.println("\nАбстрактная книга:");
-        printedBook.getDetails();
+        Appetizer[] appetizers = {
+            new Appetizer("Салат Цезарь", 120),
+            new Appetizer("Оливье", 100),
+            new Appetizer("Блины с икрой", 150),
+            new Appetizer("Тосты с авокадо", 110)
+        };
+
+        Drink[] drinks = {
+            new Drink("Кола", 50),
+            new Drink("Минеральная вода", 40),
+            new Drink("Сок апельсиновый", 70),
+            new Drink("Чай черный", 60)
+        };
+
+        Dessert[] desserts = {
+            new Dessert("Торт Наполеон", 80),
+            new Dessert("Мороженое", 60),
+            new Dessert("Чизкейк", 120),
+            new Dessert("Пирог с яблоками", 90)
+        };
+
+        List<Order> orders = new ArrayList<>();
+        Order currentOrder = null;
+        boolean exit = false;
+
+        while (!exit) {
+            displayMenu();
+
+            int category = scanner.nextInt();
+
+            switch (category) {
+                case 1: {
+                    displayMainDishes();
+                    System.out.print("Выберите главное блюдо (1-4): ");
+                    int choice = scanner.nextInt();
+                    if (choice >= 1 && choice <= 4) {
+                        if (currentOrder == null) currentOrder = new Order();
+                        currentOrder.addItem(mainDishes[choice - 1]);
+                    } else {
+                        System.out.println("Некорректный выбор!");
+                    }
+                    break;
+                }
+                case 2: {
+                    displayAppetizers();
+                    System.out.print("Выберите закуску (1-4): ");
+                    int choice = scanner.nextInt();
+                    if (choice >= 1 && choice <= 4) {
+                        if (currentOrder == null) currentOrder = new Order();
+                        currentOrder.addItem(appetizers[choice - 1]);
+                    } else {
+                        System.out.println("Некорректный выбор!");
+                    }
+                    break;
+                }
+                case 3: {
+                    displayDrinks();
+                    System.out.print("Выберите напиток (1-4): ");
+                    int choice = scanner.nextInt();
+                    if (choice >= 1 && choice <= 4) {
+                        if (currentOrder == null) currentOrder = new Order();
+                        currentOrder.addItem(drinks[choice - 1]);
+                    } else {
+                        System.out.println("Некорректный выбор!");
+                    }
+                    break;
+                }
+                case 4: {
+                    displayDesserts();
+                    System.out.print("Выберите десерт (1-4): ");
+                    int choice = scanner.nextInt();
+                    if (choice >= 1 && choice <= 4) {
+                        if (currentOrder == null) currentOrder = new Order();
+                        currentOrder.addItem(desserts[choice - 1]);
+                    } else {
+                        System.out.println("Некорректный выбор!");
+                    }
+                    break;
+                }
+                case 5:
+                    if (currentOrder != null) {
+                        currentOrder.displayOrder();
+                        orders.add(currentOrder);
+                        currentOrder = null;
+                    } else {
+                        System.out.println("Нет текущего заказа!");
+                    }
+                    break;
+                case 6:
+                    exit = true;
+                    break;
+                case 7: {
+                    // Выбор клонирования
+                    System.out.println("\nВыберите тип клонирования:");
+                    System.out.println("1. Мелкое клонирование");
+                    System.out.println("2. Глубокое клонирование");
+                    System.out.print("Введите ваш выбор (1-2): ");
+                    int cloneType = scanner.nextInt();
+
+                    displayAllOrders(orders); // Показываем все заказы перед клонированием
+
+                    System.out.print("Введите номер заказа для клонирования: ");
+                    int orderToClone = scanner.nextInt();
+                    if (orderToClone > 0 && orderToClone <= orders.size()) {
+                        Order originalOrder = orders.get(orderToClone - 1);
+                        Order clonedOrder = null;
+                        if (cloneType == 1) {
+                            clonedOrder = originalOrder.shallowClone();
+                            System.out.println("Мелкое клонирование выполнено.");
+                        } else if (cloneType == 2) {
+                            clonedOrder = originalOrder.deepClone();
+                            System.out.println("Глубокое клонирование выполнено.");
+                        }
+                        if (clonedOrder != null) {
+                            clonedOrder.displayOrder();
+                            orders.add(clonedOrder);
+                        }
+                    } else {
+                        System.out.println("Некорректный выбор заказа!");
+                    }
+                    break;
+                }
+                default:
+                    System.out.println("Некорректный выбор. Попробуйте снова.");
+                    break;
+            }
+        }
+
+        // Вывод количества заказов
+        System.out.println("\nВсего сделано заказов: " + Order.getOrderCount());
     }
 }

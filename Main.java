@@ -2,9 +2,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-class MenuItem {
-    String name;
-    double price;
+// Базовый класс для всех элементов меню
+abstract class MenuItem {
+    protected String name;    // Название блюда
+    protected double price;   // Цена блюда
 
     public MenuItem(String name, double price) {
         this.name = name;
@@ -18,8 +19,12 @@ class MenuItem {
     public double getPrice() {
         return price;
     }
+
+    // Метод клонирования
+    public abstract MenuItem cloneItem();
 }
 
+// Класс для главного блюда
 class MainDish extends MenuItem {
     public MainDish(String name, double price) {
         super(name, price);
@@ -30,8 +35,14 @@ class MainDish extends MenuItem {
         System.out.print("[Главное блюдо] ");
         super.display();
     }
+
+    @Override
+    public MenuItem cloneItem() {
+        return new MainDish(this.name, this.price);
+    }
 }
 
+// Класс для закусок
 class Appetizer extends MenuItem {
     public Appetizer(String name, double price) {
         super(name, price);
@@ -42,8 +53,14 @@ class Appetizer extends MenuItem {
         System.out.print("[Закуска] ");
         super.display();
     }
+
+    @Override
+    public MenuItem cloneItem() {
+        return new Appetizer(this.name, this.price);
+    }
 }
 
+// Класс для напитков
 class Drink extends MenuItem {
     public Drink(String name, double price) {
         super(name, price);
@@ -54,8 +71,14 @@ class Drink extends MenuItem {
         System.out.print("[Напиток] ");
         super.display();
     }
+
+    @Override
+    public MenuItem cloneItem() {
+        return new Drink(this.name, this.price);
+    }
 }
 
+// Класс для десертов
 class Dessert extends MenuItem {
     public Dessert(String name, double price) {
         super(name, price);
@@ -66,15 +89,21 @@ class Dessert extends MenuItem {
         System.out.print("[Десерт] ");
         super.display();
     }
+
+    @Override
+    public MenuItem cloneItem() {
+        return new Dessert(this.name, this.price);
+    }
 }
 
-class Order {
-    List<MenuItem> items = new ArrayList<>();
-    private static int orderCount = 0;
-    private int orderNumber;
+// Класс для обработки заказа
+class Order implements Cloneable {
+    List<MenuItem> items = new ArrayList<>();  // Список заказанных позиций
+    private static int orderCount = 0;  // Статическое поле для подсчета заказов
+    private int orderNumber; // Номер текущего заказа
 
     public Order() {
-        this.orderNumber = ++orderCount;
+        this.orderNumber = ++orderCount; // Инкрементируем счетчик заказов при создании нового объекта
     }
 
     public void addItem(MenuItem item) {
@@ -91,33 +120,33 @@ class Order {
         System.out.println("Общая сумма: " + total + " руб.");
     }
 
+    // Статический метод для получения количества заказов
     public static int getOrderCount() {
         return orderCount;
     }
 
+    // Метод для очистки текущего заказа
+    public void clearOrder() {
+        items.clear();
+    }
+
+    // Получить номер заказа
     public int getOrderNumber() {
         return orderNumber;
     }
 
-    // Метод для глубокого клонирования
-    public Order deepClone() {
+    // Метод для клонирования заказа (глубокое клонирование)
+    public Order cloneOrder() {
         Order clonedOrder = new Order();
         for (MenuItem item : items) {
-            // создаем новый объект для каждого элемента
-            clonedOrder.addItem(new MenuItem(item.name, item.price));
+            clonedOrder.addItem(item.cloneItem());
         }
-        return clonedOrder;
-    }
-
-    // Метод для мелкого клонирования
-    public Order shallowClone() {
-        Order clonedOrder = new Order();
-        clonedOrder.items = this.items;  // Ссылка на тот же список
         return clonedOrder;
     }
 }
 
 public class Main {
+    static List<Order> orderHistory = new ArrayList<>(); // История заказов
 
     // Метод для отображения главного меню
     public static void displayMenu() {
@@ -127,64 +156,16 @@ public class Main {
         System.out.println("3. Напитки");
         System.out.println("4. Десерты");
         System.out.println("5. Завершить заказ");
-        System.out.println("6. Выйти из программы");
-        System.out.println("7. Клонировать заказ");
+        System.out.println("6. Клонировать предыдущий заказ");
+        System.out.println("7. Выбрать из истории заказов для клонирования");
+        System.out.println("8. Выйти из программы");
         System.out.print("Введите номер категории: ");
-    }
-
-    // Метод для отображения главных блюд
-    public static void displayMainDishes() {
-        System.out.println("\nГлавные блюда:");
-        System.out.println("1. Борщ - 150 руб.");
-        System.out.println("2. Стейк - 300 руб.");
-        System.out.println("3. Пельмени - 180 руб.");
-        System.out.println("4. Ризотто - 220 руб.");
-    }
-
-    // Метод для отображения закусок
-    public static void displayAppetizers() {
-        System.out.println("\nЗакуски:");
-        System.out.println("1. Салат Цезарь - 120 руб.");
-        System.out.println("2. Оливье - 100 руб.");
-        System.out.println("3. Блины с икрой - 150 руб.");
-        System.out.println("4. Тосты с авокадо - 110 руб.");
-    }
-
-    // Метод для отображения напитков
-    public static void displayDrinks() {
-        System.out.println("\nНапитки:");
-        System.out.println("1. Кола - 50 руб.");
-        System.out.println("2. Минеральная вода - 40 руб.");
-        System.out.println("3. Сок апельсиновый - 70 руб.");
-        System.out.println("4. Чай черный - 60 руб.");
-    }
-
-    // Метод для отображения десертов
-    public static void displayDesserts() {
-        System.out.println("\nДесерты:");
-        System.out.println("1. Торт Наполеон - 80 руб.");
-        System.out.println("2. Мороженое - 60 руб.");
-        System.out.println("3. Чизкейк - 120 руб.");
-        System.out.println("4. Пирог с яблоками - 90 руб.");
-    }
-
-    // Метод для отображения всех заказов
-    public static void displayAllOrders(List<Order> orders) {
-        if (orders.isEmpty()) {
-            System.out.println("Нет заказов для клонирования.");
-            return;
-        }
-
-        System.out.println("\nВсе заказы:");
-        for (Order order : orders) {
-            order.displayOrder();
-        }
     }
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        // Списки блюд
+        // Создание объектов для главных блюд
         MainDish[] mainDishes = {
             new MainDish("Борщ", 150),
             new MainDish("Стейк", 300),
@@ -192,6 +173,7 @@ public class Main {
             new MainDish("Ризотто", 220)
         };
 
+        // Создание объектов для закусок
         Appetizer[] appetizers = {
             new Appetizer("Салат Цезарь", 120),
             new Appetizer("Оливье", 100),
@@ -199,6 +181,7 @@ public class Main {
             new Appetizer("Тосты с авокадо", 110)
         };
 
+        // Создание объектов для напитков
         Drink[] drinks = {
             new Drink("Кола", 50),
             new Drink("Минеральная вода", 40),
@@ -206,6 +189,7 @@ public class Main {
             new Drink("Чай черный", 60)
         };
 
+        // Создание объектов для десертов
         Dessert[] desserts = {
             new Dessert("Торт Наполеон", 80),
             new Dessert("Мороженое", 60),
@@ -213,17 +197,16 @@ public class Main {
             new Dessert("Пирог с яблоками", 90)
         };
 
-        List<Order> orders = new ArrayList<>();
-        Order currentOrder = null;
         boolean exit = false;
+        Order currentOrder = null;
 
         while (!exit) {
             displayMenu();
-
             int category = scanner.nextInt();
 
             switch (category) {
                 case 1: {
+                    // Главное блюдо
                     displayMainDishes();
                     System.out.print("Выберите главное блюдо (1-4): ");
                     int choice = scanner.nextInt();
@@ -236,6 +219,7 @@ public class Main {
                     break;
                 }
                 case 2: {
+                    // Закуски
                     displayAppetizers();
                     System.out.print("Выберите закуску (1-4): ");
                     int choice = scanner.nextInt();
@@ -248,6 +232,7 @@ public class Main {
                     break;
                 }
                 case 3: {
+                    // Напитки
                     displayDrinks();
                     System.out.print("Выберите напиток (1-4): ");
                     int choice = scanner.nextInt();
@@ -260,6 +245,7 @@ public class Main {
                     break;
                 }
                 case 4: {
+                    // Десерты
                     displayDesserts();
                     System.out.print("Выберите десерт (1-4): ");
                     int choice = scanner.nextInt();
@@ -272,55 +258,89 @@ public class Main {
                     break;
                 }
                 case 5:
+                    // Завершить заказ и перейти к следующему
                     if (currentOrder != null) {
                         currentOrder.displayOrder();
-                        orders.add(currentOrder);
-                        currentOrder = null;
+                        orderHistory.add(currentOrder);  // Добавить заказ в историю
+                        currentOrder = null; // Очистить текущий заказ
                     } else {
                         System.out.println("Нет текущего заказа!");
                     }
                     break;
                 case 6:
-                    exit = true;
-                    break;
-                case 7: {
-                    // Выбор клонирования
-                    System.out.println("\nВыберите тип клонирования:");
-                    System.out.println("1. Мелкое клонирование");
-                    System.out.println("2. Глубокое клонирование");
-                    System.out.print("Введите ваш выбор (1-2): ");
-                    int cloneType = scanner.nextInt();
-
-                    displayAllOrders(orders); // Показываем все заказы перед клонированием
-
-                    System.out.print("Введите номер заказа для клонирования: ");
-                    int orderToClone = scanner.nextInt();
-                    if (orderToClone > 0 && orderToClone <= orders.size()) {
-                        Order originalOrder = orders.get(orderToClone - 1);
-                        Order clonedOrder = null;
-                        if (cloneType == 1) {
-                            clonedOrder = originalOrder.shallowClone();
-                            System.out.println("Мелкое клонирование выполнено.");
-                        } else if (cloneType == 2) {
-                            clonedOrder = originalOrder.deepClone();
-                            System.out.println("Глубокое клонирование выполнено.");
-                        }
-                        if (clonedOrder != null) {
-                            clonedOrder.displayOrder();
-                            orders.add(clonedOrder);
-                        }
+                    // Клонировать предыдущий заказ (мелкое клонирование)
+                    if (!orderHistory.isEmpty()) {
+                        Order lastOrder = orderHistory.get(orderHistory.size() - 1);
+                        Order clonedOrder = lastOrder.cloneOrder(); // Клонирование последнего заказа
+                        clonedOrder.displayOrder();
                     } else {
-                        System.out.println("Некорректный выбор заказа!");
+                        System.out.println("Нет завершенных заказов для клонирования!");
                     }
                     break;
-                }
+                case 7:
+                    // Выбрать из истории заказов для клонирования (глубокое клонирование)
+                    if (!orderHistory.isEmpty()) {
+                        System.out.println("Выберите заказ для клонирования:");
+                        for (int i = 0; i < orderHistory.size(); i++) {
+                            System.out.println(i + 1 + ". Заказ #" + orderHistory.get(i).getOrderNumber());
+                            orderHistory.get(i).displayOrder(); // Показать полный заказ
+                        }
+                        int choice = scanner.nextInt();
+                        if (choice >= 1 && choice <= orderHistory.size()) {
+                            Order orderToClone = orderHistory.get(choice - 1);
+                            Order clonedOrder = orderToClone.cloneOrder(); // Глубокое клонирование
+                            clonedOrder.displayOrder();
+                        } else {
+                            System.out.println("Некорректный выбор!");
+                        }
+                    } else {
+                        System.out.println("Нет заказов для клонирования!");
+                    }
+                    break;
+                case 8:
+                    // Выход из программы
+                    exit = true;
+                    break;
                 default:
                     System.out.println("Некорректный выбор. Попробуйте снова.");
                     break;
             }
         }
 
-        // Вывод количества заказов
-        System.out.println("\nВсего сделано заказов: " + Order.getOrderCount());
+        // Вывод количества заказов после выхода из программы
+        System.out.println("Всего сделано заказов: " + Order.getOrderCount());
+    }
+
+    // Методы для отображения блюд
+    public static void displayMainDishes() {
+        System.out.println("\nГлавные блюда:");
+        System.out.println("1. Борщ - 150 руб.");
+        System.out.println("2. Стейк - 300 руб.");
+        System.out.println("3. Пельмени - 180 руб.");
+        System.out.println("4. Ризотто - 220 руб.");
+    }
+
+    public static void displayAppetizers() {
+        System.out.println("\nЗакуски:");
+        System.out.println("1. Салат Цезарь - 120 руб.");
+        System.out.println("2. Оливье - 100 руб.");
+        System.out.println("3. Блины с икрой - 150 руб.");
+        System.out.println("4. Тосты с авокадо - 110 руб.");
+    }
+
+    public static void displayDrinks() {
+        System.out.println("\nНапитки:");
+        System.out.println("1. Кола - 50 руб.");
+        System.out.println("2. Минеральная вода - 40 руб.");
+        System.out.println("3. Сок апельсиновый - 70 руб.");
+        System.out.println("4. Чай черный - 60 руб.");
+    }
+
+    public static void displayDesserts() {
+        System.out.println("\nДесерты:");
+        System.out.println("1. Торт Наполеон - 80 руб.");
+        System.out.println("2. Мороженое - 60 руб.");
+        System.out.println("3. Чизкейк - 120 руб.");
+        System.out.println("4. Пирог с яблоками - 90 руб.");
     }
 }
